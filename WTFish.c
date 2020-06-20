@@ -25,6 +25,13 @@ int main(void)
     printf("\nWTFish(%s)-> ", cwd);
     fgets(command_string, 50, stdin);
     remove_new_line(command_string);
+
+    if (strcmp(command_string, "cd") == 0)
+    {
+      chdir("/home/sudpta/");
+      continue;
+    }
+
     int pid = fork();
 
     if (pid == 0)
