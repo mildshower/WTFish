@@ -1,0 +1,7 @@
+{
+  "editor.defaultFormatter": "ms-vscode.cpptools",
+  "files.associations": {
+    "cstdio": "c",
+    "*.tcc": "c"
+  }
+}
