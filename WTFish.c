@@ -28,9 +28,9 @@ int main(void)
     if (pid == 0)
     {
       char *args[50] = {command_string, NULL};
-      // args[0] = command_string;
-      // args[1] = NULL;
-      execvp(command_string, args);
+      int exit_code = execvp(command_string, args);
+      if (exit_code == -1)
+        printf("command '%s' was not found!!\n", command_string);
     }
     else
     {
