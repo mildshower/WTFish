@@ -17,10 +17,12 @@ void remove_new_line(char *string)
 int main(void)
 {
   char command_string[50];
+  char cwd[50];
 
   while (1)
   {
-    printf("\nWTFish-> ");
+    getcwd(cwd, sizeof(cwd));
+    printf("\nWTFish(%s)-> ", cwd);
     fgets(command_string, 50, stdin);
     remove_new_line(command_string);
     int pid = fork();
