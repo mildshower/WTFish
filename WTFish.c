@@ -21,7 +21,7 @@ char **parse_command_string(char *command_string)
 {
   char **args = malloc(sizeof(char *) * strlen(command_string));
   unsigned arg_num = 0, string_pos = 0;
-  Bool is_escaped = false;
+  Bool is_escaped = false, double_quote = false, single_quote = false;
   args[0] = malloc(sizeof(char) * strlen(command_string));
 
   for (unsigned index = 0; command_string[index] != '\0'; index++)
@@ -39,7 +39,19 @@ char **parse_command_string(char *command_string)
       continue;
     }
 
-    if (command_string[index] == ' ')
+    if (command_string[index] == '"' && !single_quote)
+    {
+      double_quote = !double_quote;
+      continue;
+    }
+
+    if (command_string[index] == '\'' && !double_quote)
+    {
+      single_quote = !single_quote;
+      continue;
+    }
+
+    if (command_string[index] == ' ' && !double_quote && !single_quote)
     {
       args[arg_num][string_pos++] = '\0';
       args[arg_num] = realloc(args[arg_num], sizeof(char) * string_pos);
@@ -49,6 +61,11 @@ char **parse_command_string(char *command_string)
     }
 
     args[arg_num][string_pos++] = command_string[index];
+  }
+
+  if (double_quote || single_quote)
+  {
+    return NULL;
   }
 
   args = realloc(args, sizeof(char *) * arg_num + 2);
@@ -76,6 +93,25 @@ char *replace_home_path(char *home, char *cwd)
   return cwd + home_path_length - 1;
 }
 
+char **generate_args(char *command_string)
+{
+  char total_command[1000] = "\0";
+  strcpy(total_command, command_string);
+  char **args = parse_command_string(command_string);
+
+  while (args == NULL)
+  {
+    printf("dquote> ");
+    char new_line[100];
+    fgets(new_line, 100, stdin);
+    remove_new_line(new_line);
+    strcat(total_command, "\n");
+    strcat(total_command, new_line);
+    args = parse_command_string(total_command);
+  }
+  return args;
+}
+
 int main(void)
 {
   char command_string[100];
@@ -91,24 +127,24 @@ int main(void)
     printf("\nWTFish (\033[0;36m%s\033[0m)-> ", replace_home_path(home, cwd));
     fgets(command_string, 100, stdin);
     remove_new_line(command_string);
-    char **args = parse_command_string(command_string);
-
-    if (strcmp(args[0], "cd") == 0)
-    {
-      exit_code = chdir(args[1] == NULL ? home : args[1]);
-      if (exit_code < 0)
-        printf("'cd' command couldn't be executed. Please check the path or permission!!\n");
-      continue;
-    }
-
     int pid = fork();
-
     if (pid == 0)
     {
-      signal(SIGINT, safe_exit);
-      exit_code = execvp(args[0], args);
-      if (exit_code == -1)
-        printf("command '%s' was not found!!\n", command_string);
+      char **args = generate_args(command_string);
+
+      if (strcmp(args[0], "cd") == 0)
+      {
+        exit_code = chdir(args[1] == NULL ? home : args[1]);
+        if (exit_code < 0)
+          printf("'cd' command couldn't be executed. Please check the path or permission!!\n");
+      }
+      else
+      {
+        signal(SIGINT, safe_exit);
+        exit_code = execvp(args[0], args);
+        if (exit_code == -1)
+          printf("command '%s' was not found!!\n", command_string);
+      }
     }
     else
     {
