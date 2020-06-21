@@ -4,12 +4,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 typedef enum
 {
   false,
   true
 } Bool;
+
+void safe_exit(int signal)
+{
+  exit(1);
+}
 
 char **parse_command_string(char *command_string)
 {
@@ -76,6 +82,8 @@ int main(void)
   char cwd[100];
   char *home = getenv("HOME");
   int exit_code;
+  signal(SIGINT, SIG_IGN);
+  signal(SIGQUIT, safe_exit);
 
   while (1)
   {
@@ -97,6 +105,7 @@ int main(void)
 
     if (pid == 0)
     {
+      signal(SIGINT, safe_exit);
       exit_code = execvp(args[0], args);
       if (exit_code == -1)
         printf("command '%s' was not found!!\n", command_string);
