@@ -31,7 +31,7 @@ void add(Dictionary *dictionary, char *key, char *value)
     if (strcmp(current_pair->key, key) == 0)
     {
       char *value_str = malloc(sizeof(char) * strlen(value) + 1);
-      current_pair->value = realloc(current_pair->value, sizeof(char) * strlen(value) + 1);
+      current_pair->value = realloc(current_pair->value, sizeof(char) * (strlen(value) + 1));
       strcpy(current_pair->value, value);
       return;
     }
