@@ -1,0 +1,56 @@
+commit fcce5cde8fe5e86f2abbc2a1d929c85af4391af7
+Author: Sudipta Kundu <sdptknd@gmail.com>
+Date:   Sun Jun 21 16:27:10 2020 +0530
+
+    added functionality of dequoting
+
+commit 29761681adb1121ff04b61539b773e0581be02df
+Author: Sudipta Kundu <sdptknd@gmail.com>
+Date:   Sun Jun 21 15:36:24 2020 +0530
+
+    added ignoring interruption signal
+
+commit 9a220476aec5fb1cbdf0f42df618c84a5b8f6298
+Author: Sudipta Kundu <sdptknd@gmail.com>
+Date:   Sun Jun 21 15:24:10 2020 +0530
+
+    added functionality for argument passing to commands
+    
+    also escape character for space is allowed
+
+commit 7a1db6f5a2efd3727f07d0d2ce05d2da5ded941b
+Author: Sudipta Kundu <sdptknd@gmail.com>
+Date:   Sun Jun 21 03:33:30 2020 +0530
+
+    added functionality that can replace home path with ~
+    
+    also added color in directory showing
+
+commit 27ae7baf9edf4b98a8a09732cb5127ecf0d2849d
+Author: Sudipta Kundu <sdptknd@gmail.com>
+Date:   Sun Jun 21 03:11:16 2020 +0530
+
+    added support for cd
+    
+    for now can't take any argument, so it returns to the home directory
+
+commit 4828b51bee64b72af212213364c100336918e220
+Author: Sudipta Kundu <sdptknd@gmail.com>
+Date:   Sun Jun 21 03:06:45 2020 +0530
+
+    added showing current working directory in prompt
+
+commit e4388894c48837f5475789c71b26b997d4b5913b
+Author: Sudipta Kundu <sdptknd@gmail.com>
+Date:   Sun Jun 21 02:58:20 2020 +0530
+
+    added feature for telling command not found
+    
+    when a command is not found in PATH variable stored directories, then
+    this message is shown
+
+commit bc24b3e01ddab65f376e7aa937232a0a74dcaa5f
+Author: Sudipta Kundu <sdptknd@gmail.com>
+Date:   Sun Jun 21 02:51:34 2020 +0530
+
+    first commi: works for external commands without argument

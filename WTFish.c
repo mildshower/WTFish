@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include "dictionary.h"
 
 typedef enum
 {
@@ -112,24 +113,70 @@ char **generate_args(char *command_string)
   return args;
 }
 
+char *get_first_token(char *command_string)
+{
+  char *token = malloc(sizeof(char *) * 30);
+  unsigned index;
+  for (index = 0; command_string[index] != ' '; index++)
+  {
+    token[index] = command_string[index];
+  }
+  token[index] = '\0';
+  return token;
+}
+
+char *prepend_alias_value(char *command_string, char *alias_value, unsigned first_token_length)
+{
+  char *total_command = malloc(sizeof(char) * 100);
+  strcpy(total_command, alias_value);
+  strcat(total_command, command_string + first_token_length);
+  return total_command;
+}
+
+void handle_alias(Dictionary *aliases, char **args)
+{
+  if (args[1] == NULL)
+  {
+    show(aliases);
+  }
+  else if (args[2] == NULL)
+  {
+    char *value = get_value(aliases, args[1]);
+    printf("%s: '%s'\n", args[1], value == NULL ? "(alias not found)" : value);
+  }
+  else
+  {
+    add(aliases, args[1], args[2]);
+  }
+}
+
 int main(void)
 {
-  char command_string[100];
+  char *command_string = malloc(sizeof(char) * 100);
   char cwd[100];
   char *home = getenv("HOME");
   int exit_code;
   signal(SIGINT, SIG_IGN);
   signal(SIGQUIT, safe_exit);
+  char code[20] = "\033[0m";
+  Dictionary *aliases = create_dictionary();
 
   while (1)
   {
     getcwd(cwd, sizeof(cwd));
-    printf("\nWTFish (\033[0;36m%s\033[0m)-> ", replace_home_path(home, cwd));
+    printf("\nWTFish (\033[0;36m%s\033[0m)%s‣\033[0m ", replace_home_path(home, cwd), code);
+    strcpy(code, "\033[0m");
     fgets(command_string, 100, stdin);
     remove_new_line(command_string);
     int pid = fork();
     if (pid == 0)
     {
+      char *first_token = get_first_token(command_string);
+      char *alias_value = get_value(aliases, first_token);
+      if (alias_value != NULL)
+      {
+        command_string = prepend_alias_value(command_string, alias_value, strlen(first_token));
+      }
       char **args = generate_args(command_string);
 
       if (strcmp(args[0], "cd") == 0)
@@ -138,12 +185,19 @@ int main(void)
         if (exit_code < 0)
           printf("'cd' command couldn't be executed. Please check the path or permission!!\n");
       }
+      else if (strcmp(args[0], "alias") == 0)
+      {
+        handle_alias(aliases, args);
+      }
       else
       {
         signal(SIGINT, safe_exit);
         exit_code = execvp(args[0], args);
         if (exit_code == -1)
+        {
           printf("command '%s' was not found!!\n", command_string);
+          strcpy(code, "\033[0;31m");
+        }
       }
     }
     else
