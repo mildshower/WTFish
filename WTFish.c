@@ -18,6 +18,18 @@ void safe_exit(int signal)
   exit(1);
 }
 
+char **remove_unnecessay_arg(char **args)
+{
+  char **new_args = malloc(sizeof(char *) * 100);
+  unsigned new_arg_index = 0;
+  for (unsigned index = 0; args[index] != NULL; index++)
+  {
+    if (strcmp(args[index], "") != 0)
+      new_args[new_arg_index++] = args[index];
+  }
+  return new_args;
+}
+
 char **parse_command_string(char *command_string)
 {
   char **args = malloc(sizeof(char *) * strlen(command_string));
@@ -54,8 +66,8 @@ char **parse_command_string(char *command_string)
 
     if (command_string[index] == ' ' && !double_quote && !single_quote)
     {
-      args[arg_num][string_pos++] = '\0';
-      args[arg_num] = realloc(args[arg_num], sizeof(char) * string_pos);
+      args[arg_num][string_pos] = '\0';
+      args[arg_num] = realloc(args[arg_num], sizeof(char) * (string_pos + 1));
       args[++arg_num] = malloc(sizeof(char) * strlen(command_string));
       string_pos = 0;
       continue;
@@ -64,13 +76,16 @@ char **parse_command_string(char *command_string)
     args[arg_num][string_pos++] = command_string[index];
   }
 
+  args[arg_num][string_pos] = '\0';
+  args[arg_num] = realloc(args[arg_num], sizeof(char) * (string_pos + 1));
+
   if (double_quote || single_quote)
   {
     return NULL;
   }
-
-  args = realloc(args, sizeof(char *) * arg_num + 2);
+  args = realloc(args, sizeof(char *) * (arg_num + 2));
   args[arg_num + 1] = NULL;
+
   return args;
 }
 
@@ -110,7 +125,7 @@ char **generate_args(char *command_string)
     strcat(total_command, new_line);
     args = parse_command_string(total_command);
   }
-  return args;
+  return remove_unnecessay_arg(args);
 }
 
 char *get_first_token(char *command_string)
@@ -142,7 +157,7 @@ void handle_alias(Dictionary *aliases, char **args)
   else if (args[2] == NULL)
   {
     char *value = get_value(aliases, args[1]);
-    printf("%s: '%s'\n", args[1], value == NULL ? "(alias not found)" : value);
+    printf("%s: '%s'\n", args[1], value);
   }
   else
   {
