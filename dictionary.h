@@ -11,12 +11,13 @@ typedef struct pair
 typedef struct
 {
   Pair *start;
-  Pair *end;
+  // Pair *end;
 } Dictionary;
 
 Dictionary *create_dictionary();
 void add(Dictionary *dictionary, char *key, char *value);
 char *get_value(Dictionary *dictionary, char *key);
 void show(Dictionary *dictionary);
+void remove_key(Dictionary *dictionary, char *key);
 
 #endif

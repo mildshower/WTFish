@@ -204,6 +204,10 @@ int main(void)
       {
         handle_alias(aliases, args);
       }
+      else if (strcmp(args[0], "unalias") == 0)
+      {
+        remove_key(aliases, args[1]);
+      }
       else
       {
         signal(SIGINT, safe_exit);

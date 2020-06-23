@@ -7,7 +7,7 @@ Dictionary *create_dictionary()
 {
   Dictionary *dictionary = malloc(sizeof(Dictionary));
   dictionary->start = NULL;
-  dictionary->end = NULL;
+  // dictionary->end = NULL;
   return dictionary;
 }
 
@@ -39,16 +39,8 @@ void add(Dictionary *dictionary, char *key, char *value)
   }
 
   Pair *new_pair = create_pair(key, value);
-
-  if (dictionary->start == NULL)
-  {
-    dictionary->start = new_pair;
-  }
-  else
-  {
-    dictionary->end->next = new_pair;
-  }
-  dictionary->end = new_pair;
+  new_pair->next = dictionary->start;
+  dictionary->start = new_pair;
 }
 
 char *get_value(Dictionary *dictionary, char *key)
@@ -75,5 +67,23 @@ void show(Dictionary *dictionary)
   {
     printf("%s: '%s'\n", current_pair->key, current_pair->value);
     current_pair = current_pair->next;
+  }
+}
+
+void remove_key(Dictionary *dictionary, char *key)
+{
+  Pair **current_node_link = &(dictionary->start);
+
+  while ((*current_node_link) != NULL)
+  {
+    if (strcmp((*current_node_link)->key, key) == 0)
+    {
+      Pair *pair_to_delete = (*current_node_link);
+      *current_node_link = (*current_node_link)->next;
+      if (dictionary->start == pair_to_delete)
+        dictionary->start = pair_to_delete->next;
+      return free(pair_to_delete);
+    }
+    current_node_link = &(*current_node_link)->next;
   }
 }
