@@ -30,7 +30,19 @@ char **remove_unnecessay_arg(char **args)
   return new_args;
 }
 
-char **parse_command_string(char *command_string)
+char *get_key(char *str)
+{
+  char *key = malloc(sizeof(char) * 30);
+  unsigned index;
+  for (index = 0; str[index] != ']' && str[index] != '\0'; index++)
+  {
+    key[index] = str[index];
+  }
+  key[index] = '\0';
+  return key;
+}
+
+char **parse_command_string(char *command_string, Dictionary *variables)
 {
   char **args = malloc(sizeof(char *) * strlen(command_string));
   unsigned arg_num = 0, string_pos = 0;
@@ -73,6 +85,20 @@ char **parse_command_string(char *command_string)
       continue;
     }
 
+    if (command_string[index] == '[' && !double_quote && !single_quote)
+    {
+      char *key = get_key(command_string + index + 1);
+      char *value = get_value(variables, key);
+      value == NULL && (value = "");
+      for (unsigned i = 0; value[i] != '\0'; i++)
+      {
+        args[arg_num][string_pos++] = value[i];
+      }
+      index += strlen(key) + 1;
+      command_string[index] == '\0' && (index--);
+      continue;
+    }
+
     args[arg_num][string_pos++] = command_string[index];
   }
 
@@ -109,11 +135,11 @@ char *replace_home_path(char *home, char *cwd)
   return cwd + home_path_length - 1;
 }
 
-char **generate_args(char *command_string)
+char **generate_args(char *command_string, Dictionary *variables)
 {
   char total_command[1000] = "\0";
   strcpy(total_command, command_string);
-  char **args = parse_command_string(command_string);
+  char **args = parse_command_string(command_string, variables);
 
   while (args == NULL)
   {
@@ -123,7 +149,7 @@ char **generate_args(char *command_string)
     remove_new_line(new_line);
     strcat(total_command, "\n");
     strcat(total_command, new_line);
-    args = parse_command_string(total_command);
+    args = parse_command_string(total_command, variables);
   }
   return remove_unnecessay_arg(args);
 }
@@ -165,6 +191,16 @@ void handle_alias(Dictionary *aliases, char **args)
   }
 }
 
+Bool is_valid_varname(char *varname)
+{
+  for (unsigned index = 0; varname[index] != '\0'; index++)
+  {
+    if (varname[index] == ' ' || varname[index] == '\n' || varname[index] == '\t')
+      return false;
+  }
+  return true;
+}
+
 int main(void)
 {
   char *command_string = malloc(sizeof(char) * 100);
@@ -175,6 +211,7 @@ int main(void)
   signal(SIGQUIT, safe_exit);
   char code[20] = "\033[0m";
   Dictionary *aliases = create_dictionary();
+  Dictionary *variables = create_dictionary();
 
   while (1)
   {
@@ -192,7 +229,7 @@ int main(void)
       {
         command_string = prepend_alias_value(command_string, alias_value, strlen(first_token));
       }
-      char **args = generate_args(command_string);
+      char **args = generate_args(command_string, variables);
 
       if (strcmp(args[0], "cd") == 0)
       {
@@ -208,13 +245,26 @@ int main(void)
       {
         remove_key(aliases, args[1]);
       }
+      else if (strcmp(args[0], "set") == 0)
+      {
+        if (args[1] == NULL || args[2] == NULL)
+          printf("set: please provide correct format `set var value`\n");
+        else if (!is_valid_varname(args[1]))
+          printf("set: variable name invalid. <space>, <tab> and <new_line> are not allowed.\n");
+        else
+          add(variables, args[1], args[2]);
+      }
+      else if (strcmp(args[0], "unset") == 0)
+      {
+        remove_key(variables, args[1]);
+      }
       else
       {
         signal(SIGINT, safe_exit);
         exit_code = execvp(args[0], args);
         if (exit_code == -1)
         {
-          printf("command '%s' was not found!!\n", command_string);
+          printf("command '%s' was not found!!\n", args[0]);
           strcpy(code, "\033[0;31m");
         }
       }
