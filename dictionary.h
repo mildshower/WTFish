@@ -11,7 +11,6 @@ typedef struct pair
 typedef struct
 {
   Pair *start;
-  // Pair *end;
 } Dictionary;
 
 Dictionary *create_dictionary();

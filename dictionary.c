@@ -7,15 +7,14 @@ Dictionary *create_dictionary()
 {
   Dictionary *dictionary = malloc(sizeof(Dictionary));
   dictionary->start = NULL;
-  // dictionary->end = NULL;
   return dictionary;
 }
 
 Pair *create_pair(char *key, char *value)
 {
   Pair *new_pair = malloc(sizeof(Pair));
-  new_pair->key = malloc(sizeof(char) * strlen(key) + 1);
-  new_pair->value = malloc(sizeof(char) * strlen(value) + 1);
+  new_pair->key = malloc(sizeof(char) * (strlen(key) + 1));
+  new_pair->value = malloc(sizeof(char) * (strlen(value) + 1));
   strcpy(new_pair->key, key);
   strcpy(new_pair->value, value);
   new_pair->next = NULL;
@@ -30,7 +29,7 @@ void add(Dictionary *dictionary, char *key, char *value)
   {
     if (strcmp(current_pair->key, key) == 0)
     {
-      char *value_str = malloc(sizeof(char) * strlen(value) + 1);
+      // char *value_str = malloc(sizeof(char) * (strlen(value) + 1));
       current_pair->value = realloc(current_pair->value, sizeof(char) * (strlen(value) + 1));
       strcpy(current_pair->value, value);
       return;

@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include "dictionary.h"
+#include "prompt.h"
 
 typedef enum
 {
@@ -124,17 +125,6 @@ void remove_new_line(char *string)
   }
 }
 
-char *replace_home_path(char *home, char *cwd)
-{
-  unsigned home_path_length = strlen(home);
-  Bool is_home_path_present = strncmp(home, cwd, home_path_length) == 0;
-  if (!is_home_path_present)
-    return cwd;
-
-  cwd[home_path_length - 1] = '~';
-  return cwd + home_path_length - 1;
-}
-
 char **generate_args(char *command_string, Dictionary *variables)
 {
   char total_command[1000] = "\0";
@@ -156,9 +146,9 @@ char **generate_args(char *command_string, Dictionary *variables)
 
 char *get_first_token(char *command_string)
 {
-  char *token = malloc(sizeof(char *) * 30);
+  char *token = malloc(sizeof(char) * 30);
   unsigned index;
-  for (index = 0; command_string[index] != ' '; index++)
+  for (index = 0; command_string[index] != ' ' && command_string[index] != '\0'; index++)
   {
     token[index] = command_string[index];
   }
@@ -201,6 +191,14 @@ Bool is_valid_varname(char *varname)
   return true;
 }
 
+void show_prompt(operation_set **prompt_operations, char *prompt, int code)
+{
+  char *prompt_str = parse(prompt ? prompt : "#blue(WTFish)-> ", prompt_operations, code);
+  // printf("\nWTFish (\033[0;36m%s\033[0m)%s‣\033[0m ", replace_home_path(home, cwd), code);
+  printf("\n%s", prompt_str);
+  free(prompt_str);
+}
+
 int main(void)
 {
   char *command_string = malloc(sizeof(char) * 100);
@@ -209,15 +207,17 @@ int main(void)
   int exit_code;
   signal(SIGINT, SIG_IGN);
   signal(SIGQUIT, safe_exit);
-  char code[20] = "\033[0m";
+  int code = 1;
   Dictionary *aliases = create_dictionary();
   Dictionary *variables = create_dictionary();
+  // add(variables, "PROMPT", "#red(this-#short_cwd())->");
+  operation_set **prompt_operations = get_operations();
 
   while (1)
   {
-    getcwd(cwd, sizeof(cwd));
-    printf("\nWTFish (\033[0;36m%s\033[0m)%s‣\033[0m ", replace_home_path(home, cwd), code);
-    strcpy(code, "\033[0m");
+    // getcwd(cwd, sizeof(cwd));
+    show_prompt(prompt_operations, get_value(variables, "PROMPT"), code);
+    code = 1;
     fgets(command_string, 100, stdin);
     remove_new_line(command_string);
     int pid = fork();
@@ -233,9 +233,10 @@ int main(void)
 
       if (strcmp(args[0], "cd") == 0)
       {
-        exit_code = chdir(args[1] == NULL ? home : args[1]);
+        exit_code = chdir(args[1] == NULL ? getenv("HOME") : args[1]);
         if (exit_code < 0)
           printf("'cd' command couldn't be executed. Please check the path or permission!!\n");
+        code = 0;
       }
       else if (strcmp(args[0], "alias") == 0)
       {
@@ -265,7 +266,7 @@ int main(void)
         if (exit_code == -1)
         {
           printf("command '%s' was not found!!\n", args[0]);
-          strcpy(code, "\033[0;31m");
+          code = 0;
         }
       }
     }
