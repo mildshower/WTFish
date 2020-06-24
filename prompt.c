@@ -4,12 +4,6 @@
 #include <stdarg.h>
 #include "prompt.h"
 
-typedef struct
-{
-  char *op;
-  char *param;
-} Op_P;
-
 void replace_home_path(char *home, char *cwd)
 {
   unsigned home_path_length = strlen(home);
@@ -160,7 +154,7 @@ char *short_cwd(char *none, ...)
 
 operation_set **get_operations()
 {
-  operation_set **operations = malloc(sizeof(operation_set *) * 4);
+  operation_set **operations = malloc(sizeof(operation_set *) * 12);
   operations[0] = malloc(sizeof(operation_set));
   operations[0]->key = malloc(sizeof(char) * 4);
   operations[0]->key = "cwd";
