@@ -9,11 +9,6 @@
 #include "prompt.h"
 #include "command_line_parse.h"
 
-void safe_exit(int signal)
-{
-  exit(1);
-}
-
 char *prepend_alias_value(char *command_string, char *alias_value, unsigned first_token_length)
 {
   char *total_command = malloc(sizeof(char) * 100);
@@ -47,15 +42,13 @@ void show_prompt(operation_set **prompt_operations, char *prompt, int code)
 
 int main(void)
 {
-  char *command_string = malloc(sizeof(char) * 100);
-  char cwd[100];
-  char *home = getenv("HOME");
-  int exit_code;
   signal(SIGINT, SIG_IGN);
-  signal(SIGQUIT, safe_exit);
-  int code = 1;
+  signal(SIGQUIT, exit);
   Dictionary *aliases = create_dictionary();
   Dictionary *variables = create_dictionary();
+  char *command_string = malloc(sizeof(char) * 100);
+  int exit_code;
+  int code = 1;
   operation_set **prompt_operations = get_operations();
 
   while (1)
@@ -105,7 +98,7 @@ int main(void)
       }
       else
       {
-        signal(SIGINT, safe_exit);
+        signal(SIGINT, exit);
         exit_code = execvp(args[0], args);
         if (exit_code == -1)
         {
