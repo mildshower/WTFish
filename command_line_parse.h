@@ -10,7 +10,7 @@ typedef enum
 void remove_new_line(char *string);
 char **generate_args(char *command_string, Dictionary *variables);
 char *get_first_token(char *command_string);
-char *get_command_string();
+char *get_command_string(Dictionary *);
 void free_args(char **args);
 
 #endif

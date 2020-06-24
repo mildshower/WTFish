@@ -143,12 +143,29 @@ char *get_first_token(char *command_string)
   return realloc(token, sizeof(char) * (strlen(token) + 1));
 }
 
-char *get_command_string()
+char *prepend_alias_value(char *command_string, char *alias_value, unsigned first_token_length)
+{
+  char *total_command = malloc(sizeof(char) * 100);
+  strcpy(total_command, alias_value);
+  strcat(total_command, command_string + first_token_length);
+  free(command_string);
+  return realloc(total_command, sizeof(char) * (strlen(total_command) + 1));
+}
+
+char *get_command_string(Dictionary *aliases)
 {
   char *command_string = malloc(sizeof(char) * 100);
   fgets(command_string, 100, stdin);
   remove_new_line(command_string);
-  return realloc(command_string, sizeof(char) * (strlen(command_string) + 1));
+  command_string = realloc(command_string, sizeof(char) * (strlen(command_string) + 1));
+  char *first_token = get_first_token(command_string);
+  char *alias_value = get_value(aliases, first_token);
+  free(first_token);
+  if (alias_value != NULL)
+  {
+    command_string = prepend_alias_value(command_string, alias_value, strlen(first_token));
+  }
+  return command_string;
 }
 
 void free_args(char **args)
