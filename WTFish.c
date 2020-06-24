@@ -14,7 +14,8 @@ char *prepend_alias_value(char *command_string, char *alias_value, unsigned firs
   char *total_command = malloc(sizeof(char) * 100);
   strcpy(total_command, alias_value);
   strcat(total_command, command_string + first_token_length);
-  return total_command;
+  free(command_string);
+  return realloc(total_command, sizeof(char) * (strlen(total_command) + 1));
 }
 
 void handle_alias(Dictionary *aliases, char **args)
@@ -46,7 +47,7 @@ int main(void)
   signal(SIGQUIT, exit);
   Dictionary *aliases = create_dictionary();
   Dictionary *variables = create_dictionary();
-  char *command_string = malloc(sizeof(char) * 100);
+  // char *command_string = malloc(sizeof(char) * 100);
   int exit_code;
   int code = 1;
   operation_set **prompt_operations = get_operations();
@@ -55,18 +56,19 @@ int main(void)
   {
     show_prompt(prompt_operations, get_value(variables, "PROMPT"), code);
     code = 1;
-    fgets(command_string, 100, stdin);
-    remove_new_line(command_string);
+    char *command_string = get_command_string();
     int pid = fork();
     if (pid == 0)
     {
       char *first_token = get_first_token(command_string);
       char *alias_value = get_value(aliases, first_token);
+      free(first_token);
       if (alias_value != NULL)
       {
         command_string = prepend_alias_value(command_string, alias_value, strlen(first_token));
       }
       char **args = generate_args(command_string, variables);
+      free(command_string);
 
       if (strcmp(args[0], "cd") == 0)
       {
@@ -106,6 +108,7 @@ int main(void)
           code = 0;
         }
       }
+      free_args(args);
     }
     else
     {

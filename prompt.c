@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include "prompt.h"
 
 void replace_home_path(char *home, char *cwd)
@@ -19,9 +20,9 @@ void replace_home_path(char *home, char *cwd)
 
 char *cwd(char *none, ...)
 {
-  char *original = getenv("PWD");
-  char *cwd = malloc(sizeof(char) * (strlen(original) + 1));
-  strcpy(cwd, original);
+  char *cwd = malloc(sizeof(char) * 100);
+  getcwd(cwd, 100);
+  cwd = realloc(cwd, sizeof(char) * (strlen(cwd) + 1));
   return cwd;
 }
 
@@ -146,7 +147,9 @@ char *short_cwd(char *none, ...)
 {
   char *short_cwd = malloc(sizeof(char) * 100);
   strcpy(short_cwd, getenv("HOME"));
-  char *cwd = getenv("PWD");
+  char *cwd = malloc(sizeof(char) * 100);
+  getcwd(cwd, 100);
+  cwd = realloc(cwd, sizeof(char) * (strlen(cwd) + 1));
   replace_home_path(short_cwd, cwd);
   short_cwd = realloc(short_cwd, sizeof(char) * (strlen(short_cwd) + 1));
   return short_cwd;

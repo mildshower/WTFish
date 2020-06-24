@@ -7,12 +7,16 @@
 char **remove_unnecessary_arg(char **args)
 {
   char **new_args = malloc(sizeof(char *) * 100);
-  unsigned new_arg_index = 0;
-  for (unsigned index = 0; args[index] != NULL; index++)
+  unsigned new_arg_index = 0, index;
+  for (index = 0; args[index] != NULL; index++)
   {
     if (strcmp(args[index], "") != 0)
       new_args[new_arg_index++] = args[index];
+    else
+      free(args[index]);
   }
+  new_args[index] = NULL;
+  free(args);
   return new_args;
 }
 
@@ -134,9 +138,22 @@ char *get_first_token(char *command_string)
   char *token = malloc(sizeof(char) * 30);
   unsigned index;
   for (index = 0; command_string[index] != ' ' && command_string[index] != '\0'; index++)
-  {
     token[index] = command_string[index];
-  }
   token[index] = '\0';
-  return token;
+  return realloc(token, sizeof(char) * (strlen(token) + 1));
+}
+
+char *get_command_string()
+{
+  char *command_string = malloc(sizeof(char) * 100);
+  fgets(command_string, 100, stdin);
+  remove_new_line(command_string);
+  return realloc(command_string, sizeof(char) * (strlen(command_string) + 1));
+}
+
+void free_args(char **args)
+{
+  for (unsigned index = 0; args[index] != NULL; index++)
+    free(args[index]);
+  free(args);
 }

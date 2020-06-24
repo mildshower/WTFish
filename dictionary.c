@@ -50,7 +50,9 @@ char *get_value(Dictionary *dictionary, char *key)
   {
     if (strcmp(current_pair->key, key) == 0)
     {
-      return current_pair->value;
+      char *value = malloc(sizeof(char) * (strlen(current_pair->value) + 1));
+      strcpy(value, current_pair->value);
+      return value;
     }
     current_pair = current_pair->next;
   }
@@ -81,6 +83,8 @@ void remove_key(Dictionary *dictionary, char *key)
       *current_node_link = (*current_node_link)->next;
       if (dictionary->start == pair_to_delete)
         dictionary->start = pair_to_delete->next;
+      free(pair_to_delete->key);
+      free(pair_to_delete->value);
       return free(pair_to_delete);
     }
     current_node_link = &(*current_node_link)->next;
