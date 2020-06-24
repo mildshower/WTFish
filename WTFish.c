@@ -25,28 +25,16 @@ char *prepend_alias_value(char *command_string, char *alias_value, unsigned firs
 void handle_alias(Dictionary *aliases, char **args)
 {
   if (args[1] == NULL)
-  {
     show(aliases);
-  }
   else if (args[2] == NULL)
-  {
-    char *value = get_value(aliases, args[1]);
-    printf("%s: '%s'\n", args[1], value);
-  }
+    printf("%s: '%s'\n", args[1], get_value(aliases, args[1]));
   else
-  {
     add(aliases, args[1], args[2]);
-  }
 }
 
 Bool is_valid_varname(char *varname)
 {
-  for (unsigned index = 0; varname[index] != '\0'; index++)
-  {
-    if (varname[index] == ' ' || varname[index] == '\n' || varname[index] == '\t')
-      return false;
-  }
-  return true;
+  return !(strstr(varname, "\n") || strstr(varname, " ") || strstr(varname, "\t"));
 }
 
 void show_prompt(operation_set **prompt_operations, char *prompt, int code)
